@@ -155,7 +155,7 @@ class SpacyPreprocessor(Preprocessor):
             if self.case_sensitive:
                 tokens = [[tk.text for tk in doc if all(f(tk) for f in self.conditions)] for doc in docs]
             else:
-                tokens = [[tk.text.lower_ for tk in doc if all(f(tk) for f in self.conditions)] for doc in docs]
+                tokens = [[tk.text.lower() for tk in doc if all(f(tk) for f in self.conditions)] for doc in docs]
         return tokens
 
 
@@ -167,5 +167,5 @@ class SpacyPreprocessor(Preprocessor):
             if self.case_sensitive:
                 tokens = [tk.text for tk in doc if all(f(tk) for f in self.conditions)]
             else:
-                tokens = [tk.text.lower_ for tk in doc if all(f(tk) for f in self.conditions)]
+                tokens = [tk.text.lower() for tk in doc if all(f(tk) for f in self.conditions)]
         return tokens
