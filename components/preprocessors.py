@@ -1,7 +1,7 @@
 import spacy
 
 from abc import ABC, abstractmethod
-from typing import List, Set
+from typing import List, Literal, Set
 from spacy.language import Language
 
 
@@ -90,6 +90,10 @@ class SpacyPreprocessor(Preprocessor):
         extend_stopwords :Set[str]|None=None,
         pos_to_keep :set[str]|None=None,
         pos_to_rm :set[str]|None=None,
+        email :Literal['KP', 'RM']='KP',
+        numb :Literal['KP', 'RM']='KP',
+        punc :Literal['KP', 'RM']='KP',
+        url :Literal['KP', 'RM']='KP',
         pipeline :str='en_core_web_sm',
     ):
         """
@@ -109,6 +113,14 @@ class SpacyPreprocessor(Preprocessor):
         pos_to_rm : set[str] | None, optional
             Tokens marked with one of these POS tags are removed,
             by default all tokens are retained.
+        email : Literal['KP', 'RM', 'RP'], optional
+            Keep (``'KP'``), remove (``'RM'``) tokens that represent emails, by default ``'KP'``.
+        numb : Literal['KP', 'RM', 'RP'], optional
+            Keep (``'KP'``), remove (``'RM'``) tokens that represent numbers, by default ``'KP'``.
+        punc : Literal['KP', 'RM', 'RP'], optional
+            Keep (``'KP'``), remove (``'RM'``) tokens that represent punctuation, by default ``'KP'``.
+        url : Literal['KP', 'RM', 'RP'], optional
+            Keep (``'KP'``), remove (``'RM'``) tokens that represent URLs, by default ``'KP'``.
         pipeline : str, optional
             SpaCy pipeline used, by default ``'en_core_web_sm'``.
         """
@@ -134,6 +146,10 @@ class SpacyPreprocessor(Preprocessor):
         self.extend_stopwords = extend_stopwords
         self.pos_to_keep = pos_to_keep
         self.pos_to_rm = pos_to_rm
+        self.email = email
+        self.numb = numb
+        self.punc = punc
+        self.url = url
         self.pipeline = pipeline
 
         # assemble the condition that tokens must satisfy
@@ -144,6 +160,14 @@ class SpacyPreprocessor(Preprocessor):
             self.conditions.append(lambda x: x.pos_ in pos_to_keep)
         if pos_to_rm is not None:
             self.conditions.append(lambda x: x.pos_ not in pos_to_rm)
+        if email == "RM":
+            self.conditions.append(lambda x: not x.like_email)
+        if numb == "RM":
+            self.conditions.append(lambda x: not x.like_num)
+        if punc == "RM":
+            self.conditions.append(lambda x: not x.is_punct)
+        if url == "RM":
+            self.conditions.append(lambda x: not x.like_url)     
         return
 
 
