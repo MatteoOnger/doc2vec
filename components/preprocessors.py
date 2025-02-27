@@ -52,7 +52,7 @@ class Preprocessor(ABC):
 
 
 
-class SpacyPreprocessor(Preprocessor):
+class SpaCyPreprocessor(Preprocessor):
     """
     This class implements a simple preprocessor to split documents into lists of tokens.
     It is mainly based on SpaCy.
