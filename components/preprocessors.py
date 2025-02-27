@@ -8,6 +8,7 @@ from spacy.language import Language
 
 class Preprocessor(ABC):
     """
+    Abstract class, it represents a generic preprocessor.
     """
     @abstractmethod
     def preprocess_corpus(self, corpus :List[str], n_process :int, batch_size :int) -> List[List[str]]:
