@@ -1,8 +1,8 @@
 import spacy
 
 from abc import ABC, abstractmethod
-from typing import List, Literal, Set
 from spacy.language import Language
+from typing import List, Literal, Set
 
 
 
@@ -10,6 +10,7 @@ class Preprocessor(ABC):
     """
     Abstract class, it represents a generic preprocessor.
     """
+
     @abstractmethod
     def preprocess_corpus(self, corpus :List[str], n_process :int, batch_size :int) -> List[List[str]]:
         """
@@ -114,13 +115,13 @@ class SpaCyPreprocessor(Preprocessor):
             Tokens marked with one of these POS tags are removed,
             by default all tokens are retained.
         email : Literal['KP', 'RM', 'RP'], optional
-            Keep (``'KP'``), remove (``'RM'``) tokens that represent emails, by default ``'KP'``.
+            Keep (``'KP'``) or remove (``'RM'``) tokens that represent emails, by default ``'KP'``.
         numb : Literal['KP', 'RM', 'RP'], optional
-            Keep (``'KP'``), remove (``'RM'``) tokens that represent numbers, by default ``'KP'``.
+            Keep (``'KP'``) or remove (``'RM'``) tokens that represent numbers, by default ``'KP'``.
         punc : Literal['KP', 'RM', 'RP'], optional
-            Keep (``'KP'``), remove (``'RM'``) tokens that represent punctuation, by default ``'KP'``.
+            Keep (``'KP'``) or remove (``'RM'``) tokens that represent punctuation, by default ``'KP'``.
         url : Literal['KP', 'RM', 'RP'], optional
-            Keep (``'KP'``), remove (``'RM'``) tokens that represent URLs, by default ``'KP'``.
+            Keep (``'KP'``) or remove (``'RM'``) tokens that represent URLs, by default ``'KP'``.
         pipeline : str, optional
             SpaCy pipeline used, by default ``'en_core_web_sm'``.
         """
