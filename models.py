@@ -1,4 +1,4 @@
-#import logging
+import logging
 import numpy as np
 
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -10,7 +10,7 @@ from doc2vec.components.preprocessors import Preprocessor
 
 
 
-#logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 
@@ -148,8 +148,11 @@ class Doc2vec():
         elif corpus is not None:
             if self.preproc is None:
                 raise ValueError("Please providing a preprocessor during object initialization or a tokenised corpus")
+            logger.info("preprocessing start")
             tokenized_corpus = self.preproc.preprocess_corpus(corpus, n_process=Doc2vec.N_PROCESS)
+            logger.info("preprocessing done")
         
+        logger.info("embedding start")
         corpus_size = len(tokenized_corpus)
 
         # tfidf and tf each token in each document 
@@ -176,7 +179,7 @@ class Doc2vec():
             )
 
             if tokens.size == 0:
-                #logger.error(f"document {i} is empty")
+                logger.warning(f"document {i} is empty")
                 continue
             elif tokens.size == 1:
                 doc_vecs[i] = self.embedder.get_vector(tokens[0])
@@ -208,4 +211,5 @@ class Doc2vec():
 
             # i-th document vector
             doc_vecs[i] = np.average(vecs, axis=0, weights=weights)
+        logger.info("embedding done")
         return doc_vecs
