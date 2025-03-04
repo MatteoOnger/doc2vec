@@ -1,3 +1,4 @@
+#import logging
 import numpy as np
 
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -9,23 +10,67 @@ from doc2vec.components.preprocessors import Preprocessor
 
 
 
+#logger = logging.getLogger(__name__)
+
+
+
 class Doc2vec():
     """
+    This class maps a document to a vector using a weighted average of the vectors
+    associated with the tokens that constitute the document under consideration.
+    """
+
+    N_PROCESS = 1
+    """
+    Maximum number of processes used to tokenize a corpus.
     """
 
     def __init__(
         self,
-        preproc :Preprocessor,
+        preproc :Preprocessor|None,
         embedder :Embedder,
+        max_features :int|None=None,
         max_df :float|int=1.0,
         min_df :float|int=1,
-        max_features :int|None=None,
         norm :Literal['l1','l2']|None='l1',
         eps_type :Literal['abs', 'pc']='abs',
         eps :float=0.0,
         exp_a :float=1.0,
         exp_b :float=1.0,
     ):
+        """
+        Parameters
+        ----------
+        preproc : Preprocessor | None
+            Preprocessor used to tokenize the corpus.
+            If ``None``, a corpus already tokenized must be provided.
+        embedder : Embedder
+            Embedder used to embed tokens, i.e. get the vector representation of the words.
+        max_features : int | None, optional
+            If not ``None``, build a vocabulary that only consider the top ``max_features`` ordered by term frequency across the corpus.
+            Otherwise, all features are used, by default ``None``.
+        max_df : float | int, optional
+            When building the vocabulary ignore terms that have a document frequency strictly higher
+            than the given threshold, by default ``1.0``.
+        min_df : float | int, optional
+            When building the vocabulary ignore terms that have a document frequency strictly lower
+            than the given threshold, by default ``1``.
+        norm : Literal['l1', 'l2'] | None, optional
+            Each output row will have unit norm, either:
+            - ``'l2'`` sums the squares of vector elements is ``1``.
+            - ``'l1'`` sums the absolute values of vector elements is ``1`` (default choice).
+            - ``None`` means no normalization.
+        eps_type : Literal['abs', 'pc'], optional
+            Type of threshold:
+            - ``'abs'`` sets weights less than ``eps`` to zero (default choice).
+            - ``'pc'`` keeps only the largest n weights to cover at least ``eps`` (%) of the total, set the others to zero.
+        eps : float, optional
+            Threshold, by default ``0.0``.
+        exp_a : float, optional
+            Exponent of the TF-IDF term, by default ``1.0``.
+        exp_b : float, optional
+            Exponent of the similarity term, by default ``1.0``.
+        """
         self.preproc = preproc
         self.embedder = embedder
         self.tfidfer = TfidfVectorizer(
@@ -45,12 +90,66 @@ class Doc2vec():
         self.exp_b = exp_b
 
         self.vocab_ = None
+        """
+        Vocabulary of the last corpus processed.
+        """
         self.weights_ = None
+        """
+        Weights of the last corpus processed.
+        """
         self.vector_size = self.embedder.vector_size
+        """
+        Size of the document vectors.
+        """
         return
     
 
-    def transform(self, tokenized_corpus :List[List[str]], save_vocab :bool=False, save_weights :bool=False) -> np.ndarray:
+    def transform(
+        self, 
+        corpus :List[str]|None=None,
+        tokenized_corpus :List[List[str]]|None=None,
+        save_vocab :bool=False,
+        save_weights :bool=False
+    ) -> np.ndarray:
+        """
+        For each document in the corpus, the function computes a vector representing it.
+        The vectors produced lie in the same space defined by the word vectors provided
+        during the object initialization.
+
+        Parameters
+        ----------
+        corpus : List[str]
+            Corpus to be analyzed, it will be tokenized using 
+            the preprocessor provided during the object initialization.
+            Only ``corpus`` or ``tokenized_corpus`` can be set.
+        tokenized_corpus : List[List[str]]
+            Corpus, already tokenized, to be analyzed.
+            Only ``corpus`` or ``tokenized_corpus`` can be set.
+        save_vocab : bool, optional
+            For debugging, if ``True``,
+            the vocabulary for this corpus is saved in ``self.vocab_``, by default ``False``.
+        save_weights : bool, optional
+            For debugging, if ``True``,
+            the weights of each token in each document are saved in ``self.weights_``, by default ``False``.
+
+        Returns
+        -------
+        : np.ndarray of shape\(len(tokenized_corpus), self.vector_size)
+            A vector for each document.
+
+        Raises
+        ------
+        ValueError
+            If both parameters ``corpus`` and ``tokenized_corpus`` are provided.
+            If a non-tokenised corpus is supplied to ``self`` initialized without a preprocessor.
+        """
+        if corpus is not None and tokenized_corpus is not None:
+            raise ValueError("Only one between <corpus> and <tokenized_corpus> can be set")
+        elif corpus is not None:
+            if self.preproc is None:
+                raise ValueError("Please providing a preprocessor during object initialization or a tokenised corpus")
+            tokenized_corpus = self.preproc.preprocess_corpus(corpus, n_process=Doc2vec.N_PROCESS)
+        
         corpus_size = len(tokenized_corpus)
 
         # tfidf and tf each token in each document 
@@ -77,6 +176,7 @@ class Doc2vec():
             )
 
             if tokens.size == 0:
+                #logger.error(f"document {i} is empty")
                 continue
             elif tokens.size == 1:
                 doc_vecs[i] = self.embedder.get_vector(tokens[0])
