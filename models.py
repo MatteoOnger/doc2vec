@@ -4,8 +4,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
 from typing import List, Literal
 
-from components.embedders import Embedder
-from components.preprocessors import Preprocessor
+from doc2vec.components.embedders import Embedder
+from doc2vec.components.preprocessors import Preprocessor
 
 
 
@@ -73,7 +73,7 @@ class Doc2vec():
             # list of unique tokens in i-th document
             # duplicated tokens are considered only once
             tokens = np.array(
-                self.tfidf_vectorizer.get_feature_names_out()[tf_corpus[i].nonzero()[1]]
+                vocab[tf_corpus[i].nonzero()[1]]
             )
 
             if tokens.size == 0:

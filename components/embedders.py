@@ -42,7 +42,8 @@ class Embedder(ABC):
         return np.array([word in self.vocab for word in words])
 
 
-class Word2vec(Embedder):
+
+class GensimEmbedder(Embedder):
     """
     """
 
