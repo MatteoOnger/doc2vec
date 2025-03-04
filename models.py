@@ -89,6 +89,10 @@ class Doc2vec():
         self.exp_a = exp_a
         self.exp_b = exp_b
 
+        self.tcopr_ = None
+        """
+        Tokenized version of the last corpus processed.
+        """
         self.vocab_ = None
         """
         Vocabulary of the last corpus processed.
@@ -108,6 +112,7 @@ class Doc2vec():
         self, 
         corpus :List[str]|None=None,
         tokenized_corpus :List[List[str]]|None=None,
+        save_tcorp :bool=False,
         save_vocab :bool=False,
         save_weights :bool=False
     ) -> np.ndarray:
@@ -125,6 +130,9 @@ class Doc2vec():
         tokenized_corpus : List[List[str]]
             Corpus, already tokenized, to be analyzed.
             Only ``corpus`` or ``tokenized_corpus`` can be set.
+        save_tcorp : bool, optional
+            For debugging, if ``True``,
+            the tokenized corpus is saved in ``self.tcorp_``, by default ``False``.
         save_vocab : bool, optional
             For debugging, if ``True``,
             the vocabulary for this corpus is saved in ``self.vocab_``, by default ``False``.
@@ -165,7 +173,8 @@ class Doc2vec():
         tfidf_corpus = normalize(tfidf_corpus[:, cols_to_keep], norm=self.tfidfer.norm)
         tf_corpus = normalize(tfidf_corpus / self.tfidfer.idf_[cols_to_keep], norm=self.tfidfer.norm)
 
-        # for debugging, save the weights and/or vocabulary
+        # for debugging, save the tokenized corpus and/or weights and/or vocabulary
+        self.tcopr_ = tokenized_corpus if save_tcorp else None
         self.weights_ = list() if save_weights else None
         self.vocab_ = vocab if save_vocab else None
 
