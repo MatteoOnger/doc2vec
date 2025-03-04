@@ -1,6 +1,8 @@
+import re
 import spacy
 
 from abc import ABC, abstractmethod
+from enum import Enum
 from spacy.language import Language
 from typing import List, Literal, Set
 
@@ -63,6 +65,16 @@ class SpaCyPreprocessor(Preprocessor):
     - SpaCy: https://spacy.io
     """
 
+    class CREIT(Enum):
+        """
+        Common regex of invalid tokens.
+        """
+        ALPHA3 = r"^(?:.*[^a-z]{1,}.*|.{,2})$"
+        """
+        Only tokens of three or more characters consisting only of alphabetic characters are retained.
+        """
+
+
     @Language.component("lower_case_lemmas")
     def _lower_case_lemmas(doc :spacy.tokens.Doc) -> spacy.tokens.Doc:
         """
@@ -91,6 +103,7 @@ class SpaCyPreprocessor(Preprocessor):
         extend_stopwords :Set[str]|None=None,
         pos_to_keep :set[str]|None=None,
         pos_to_rm :set[str]|None=None,
+        regex_invalid_tokens :'str|Preprocessor.CREIT|None'=None,
         email :Literal['KP', 'RM']='KP',
         numb :Literal['KP', 'RM']='KP',
         punc :Literal['KP', 'RM']='KP',
@@ -114,6 +127,8 @@ class SpaCyPreprocessor(Preprocessor):
         pos_to_rm : set[str] | None, optional
             Tokens marked with one of these POS tags are removed,
             by default all tokens are retained.
+        regex_invalid_tokens : str | Preprocessor.CREIT | None, optional
+            Regex to mark tokens that must be excluded, by default ``None``.
         email : Literal['KP', 'RM', 'RP'], optional
             Keep (``'KP'``) or remove (``'RM'``) tokens that represent emails, by default ``'KP'``.
         numb : Literal['KP', 'RM', 'RP'], optional
@@ -147,6 +162,7 @@ class SpaCyPreprocessor(Preprocessor):
         self.extend_stopwords = extend_stopwords
         self.pos_to_keep = pos_to_keep
         self.pos_to_rm = pos_to_rm
+        self.regex_invalid_tokens = regex_invalid_tokens.value if isinstance(regex_invalid_tokens,  Preprocessor.CREIT) else regex_invalid_tokens
         self.email = email
         self.numb = numb
         self.punc = punc
@@ -161,6 +177,9 @@ class SpaCyPreprocessor(Preprocessor):
             self.conditions.append(lambda x: x.pos_ in pos_to_keep)
         if pos_to_rm is not None:
             self.conditions.append(lambda x: x.pos_ not in pos_to_rm)
+        if regex_invalid_tokens is not None:
+            self.pattern_invalid_tokens = re.compile(self.regex_invalid_tokens, re.I if case_sensitive else 0)
+            self.conditions.append(lambda x: not self.pattern_invalid_tokens.match(x.text))
         if email == "RM":
             self.conditions.append(lambda x: not x.like_email)
         if numb == "RM":
