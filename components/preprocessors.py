@@ -103,7 +103,7 @@ class SpaCyPreprocessor(Preprocessor):
         extend_stopwords :Set[str]|None=None,
         pos_to_keep :set[str]|None=None,
         pos_to_rm :set[str]|None=None,
-        regex_invalid_tokens :'str|Preprocessor.CREIT|None'=None,
+        regex_invalid_tokens :'str|SpaCyPreprocessor.CREIT|None'=None,
         email :Literal['KP', 'RM']='KP',
         numb :Literal['KP', 'RM']='KP',
         punc :Literal['KP', 'RM']='KP',
@@ -162,7 +162,7 @@ class SpaCyPreprocessor(Preprocessor):
         self.extend_stopwords = extend_stopwords
         self.pos_to_keep = pos_to_keep
         self.pos_to_rm = pos_to_rm
-        self.regex_invalid_tokens = regex_invalid_tokens.value if isinstance(regex_invalid_tokens,  Preprocessor.CREIT) else regex_invalid_tokens
+        self.regex_invalid_tokens = regex_invalid_tokens.value if isinstance(regex_invalid_tokens, SpaCyPreprocessor.CREIT) else regex_invalid_tokens
         self.email = email
         self.numb = numb
         self.punc = punc
