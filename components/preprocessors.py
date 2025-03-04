@@ -18,7 +18,7 @@ class Preprocessor(ABC):
 
         Parameters
         ----------
-        corpus : str
+        corpus : List[str]
             Corpus to process.
         n_process : int, optional
             Multiprocessing, maximum number of processes, by default ``1``.
@@ -28,7 +28,7 @@ class Preprocessor(ABC):
 
         Returns
         -------
-        :List[List[str]]
+        : List[List[str]]
             One of list of tokens for each document in the corpus.
         """
         pass
@@ -46,7 +46,7 @@ class Preprocessor(ABC):
 
         Returns
         -------
-        :List[str]
+        : List[str]
             List of tokens representing the document.
         """
         pass
@@ -75,7 +75,7 @@ class SpaCyPreprocessor(Preprocessor):
 
         Returns
         -------
-        :spacy.tokens.Doc
+        : spacy.tokens.Doc
             Doc modified.
         """
         for token in doc :
