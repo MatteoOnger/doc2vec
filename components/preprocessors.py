@@ -127,7 +127,7 @@ class SpaCyPreprocessor(Preprocessor):
         pos_to_rm : set[str] | None, optional
             Tokens marked with one of these POS tags are removed,
             by default all tokens are retained.
-        regex_invalid_tokens : str | Preprocessor.CREIT | None, optional
+        regex_invalid_tokens : str | SpaCyPreprocessor.CREIT | None, optional
             Regex to mark tokens that must be excluded, by default ``None``.
         email : Literal['KP', 'RM', 'RP'], optional
             Keep (``'KP'``) or remove (``'RM'``) tokens that represent emails, by default ``'KP'``.
