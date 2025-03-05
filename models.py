@@ -142,14 +142,14 @@ class Doc2vec():
 
         Returns
         -------
-        : np.ndarray of shape\(len(tokenized_corpus), self.vector_size)
+        : numpy.ndarray of shape\(len(tokenized_corpus), self.vector_size)
             A vector for each document.
 
         Raises
         ------
         ValueError
-            If both parameters ``corpus`` and ``tokenized_corpus`` are provided.
-            If a non-tokenised corpus is supplied to ``self`` initialized without a preprocessor.
+            - If both parameters ``corpus`` and ``tokenized_corpus`` are provided.
+            - If a non-tokenised corpus is supplied to ``self`` initialized without a preprocessor.
         """
         if corpus is not None and tokenized_corpus is not None:
             raise ValueError("Only one between <corpus> and <tokenized_corpus> can be set")

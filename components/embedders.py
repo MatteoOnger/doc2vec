@@ -61,7 +61,7 @@ class Embedder(ABC):
         
         Returns
         -------
-        : np.ndarray of shape \(len(words), vector_size)
+        : numpy.ndarray of shape \(len(words), vector_size)
             Vector representation of the words.
         
         Raises
@@ -83,7 +83,7 @@ class Embedder(ABC):
         
         Returns
         -------
-        : np.ndarray of shape \(len(words),)
+        : numpy.ndarray of shape \(len(words),)
             Boolean array indicating if the word is in the vocabulary.
         """
         return np.array([word in self.vocab for word in words])
