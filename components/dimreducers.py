@@ -100,6 +100,7 @@ class UMAP(DimReducer):
             All remaining parameters supported by ``umap.UMAP(...)``.
         """
         super().__init__()
+        
         self.dimred = umap.UMAP(
             n_neighbors = n_neighbors,
             n_components = n_components,

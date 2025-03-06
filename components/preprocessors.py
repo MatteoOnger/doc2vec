@@ -141,6 +141,7 @@ class SpaCyPreprocessor(Preprocessor):
             SpaCy pipeline used, by default ``'en_core_web_sm'``.
         """
         super().__init__()
+        
         self.nlp = spacy.load(pipeline, disable=["parser", "ner"])
         
         # update nlp pipeline
