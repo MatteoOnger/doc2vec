@@ -5,6 +5,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
 from typing import List, Literal
 
+from doc2vec.components.dimreducers import DimReducer
 from doc2vec.components.embedders import Embedder
 from doc2vec.components.preprocessors import Preprocessor
 
@@ -29,6 +30,7 @@ class Doc2vec():
         self,
         preproc :Preprocessor|None,
         embedder :Embedder,
+        dimreducer :DimReducer|None,
         max_features :int|None=None,
         max_df :float|int=1.0,
         min_df :float|int=1,
@@ -46,6 +48,9 @@ class Doc2vec():
             If ``None``, a corpus already tokenized must be provided.
         embedder : Embedder
             Embedder used to embed tokens, i.e. get the vector representation of the words.
+        dimreducer : DimReducer | None
+            Dimensionality reducer used to reduce the number of dimensions of document vectors.
+            If ``None``, document vectors are kept as they are.
         max_features : int | None, optional
             If not ``None``, build a vocabulary that only consider the top ``max_features`` ordered by term frequency across the corpus.
             Otherwise, all features are used, by default ``None``.
@@ -73,6 +78,7 @@ class Doc2vec():
         """
         self.preproc = preproc
         self.embedder = embedder
+        self.dimreducer = dimreducer
         self.tfidfer = TfidfVectorizer(
             lowercase = False,
             tokenizer = lambda x: x,
@@ -142,23 +148,26 @@ class Doc2vec():
 
         Returns
         -------
-        : np.ndarray of shape\(len(tokenized_corpus), self.vector_size)
+        : numpy.ndarray of shape\(len(tokenized_corpus), self.vector_size)
             A vector for each document.
 
         Raises
         ------
         ValueError
-            If both parameters ``corpus`` and ``tokenized_corpus`` are provided.
-            If a non-tokenised corpus is supplied to ``self`` initialized without a preprocessor.
+            - If both parameters ``corpus`` and ``tokenized_corpus`` are provided.
+            - If a non-tokenised corpus is supplied to ``self`` initialized without a preprocessor.
+        NotImplementedError
+            - If <eps_type> is a non-implemented threshold type.
         """
         if corpus is not None and tokenized_corpus is not None:
             raise ValueError("Only one between <corpus> and <tokenized_corpus> can be set")
         elif corpus is not None:
-            if self.preproc is None:
+            if self.preproc is not None:
+                logger.info("preprocessing start")
+                tokenized_corpus = self.preproc.preprocess_corpus(corpus, n_process=Doc2vec.N_PROCESS)
+                logger.info("preprocessing done")
+            else:    
                 raise ValueError("Please providing a preprocessor during object initialization or a tokenised corpus")
-            logger.info("preprocessing start")
-            tokenized_corpus = self.preproc.preprocess_corpus(corpus, n_process=Doc2vec.N_PROCESS)
-            logger.info("preprocessing done")
         
         logger.info("embedding start")
         corpus_size = len(tokenized_corpus)
@@ -221,4 +230,9 @@ class Doc2vec():
             # i-th document vector
             doc_vecs[i] = np.average(vecs, axis=0, weights=weights)
         logger.info("embedding done")
+
+        if self.dimreducer is not None:
+            logger.info("dim reduction start")
+            doc_vecs = self.dimreducer.fit_transform(doc_vecs)
+            logger.info("dim reduction done")
         return doc_vecs
