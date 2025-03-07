@@ -82,7 +82,7 @@ class HDBSCAN(Cluster):
             min_samples = min_samples,
             cluster_selection_epsilon = cluster_selection_epsilon,
             metric = metric,
-            store_centers = store_centers
+            store_centers = store_centers,
             **kwargs
         )
 
