@@ -1,8 +1,10 @@
 import numpy as np
+import sklearn
 
 from abc import ABC, abstractmethod
-from sklearn.cluster import HDBSCAN
 from typing import Callable, Literal
+
+import sklearn.cluster
 
 
 
@@ -77,7 +79,7 @@ class HDBSCAN(Cluster):
         if "n_jobs" not in kwargs.keys():
             kwargs["n_jobs"] = -1
 
-        self.hdbscan = HDBSCAN(
+        self.hdbscan = sklearn.cluster.HDBSCAN(
             min_cluster_size = min_cluster_size,
             min_samples = min_samples,
             cluster_selection_epsilon = cluster_selection_epsilon,
