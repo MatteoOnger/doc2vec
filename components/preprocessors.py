@@ -14,7 +14,7 @@ class Preprocessor(ABC):
     """
 
     @abstractmethod
-    def preprocess_corpus(self, corpus :List[str], n_process :int, batch_size :int) -> List[List[str]]:
+    def preprocess_corpus(self, corpus :List[str]) -> List[List[str]]:
         """
         Applies the preprocessing procedure to the given corpus.
 
@@ -22,16 +22,11 @@ class Preprocessor(ABC):
         ----------
         corpus : List[str]
             Corpus to process.
-        n_process : int, optional
-            Multiprocessing, maximum number of processes, by default ``1``.
-            Use as many processes as CPUs if set to ``-1``.
-        batch_size : int, optional
-            Number of documents per batch, by default ``1000``.
 
         Returns
         -------
         : List[List[str]]
-            One of list of tokens for each document in the corpus.
+            One list of tokens for each document in the corpus.
         """
         pass
 
@@ -109,6 +104,8 @@ class SpaCyPreprocessor(Preprocessor):
         punc :Literal['KP', 'RM']='KP',
         url :Literal['KP', 'RM']='KP',
         pipeline :str='en_core_web_sm',
+        n_process :int=-1,
+        batch_size :int=1000
     ):
         """
         Parameters
@@ -139,6 +136,11 @@ class SpaCyPreprocessor(Preprocessor):
             Keep (``'KP'``) or remove (``'RM'``) tokens that represent URLs, by default ``'KP'``.
         pipeline : str, optional
             SpaCy pipeline used, by default ``'en_core_web_sm'``.
+        n_process : int, optional
+            Multiprocessing, maximum number of processes, by default ``1``.
+            Use as many processes as CPUs if set to ``-1``.
+        batch_size : int, optional
+            Number of documents per batch, by default ``1000``.
         """
         super().__init__()
         
@@ -169,6 +171,8 @@ class SpaCyPreprocessor(Preprocessor):
         self.punc = punc
         self.url = url
         self.pipeline = pipeline
+        self.n_process = n_process
+        self.batch_size = batch_size
 
         # assemble the condition that tokens must satisfy
         self.conditions = list()
@@ -192,8 +196,8 @@ class SpaCyPreprocessor(Preprocessor):
         return
 
 
-    def preprocess_corpus(self, corpus :List[str], n_process :int=1, batch_size :int=1000)  -> List[List[str]]:
-        docs = self.nlp.pipe(corpus, n_process=n_process, batch_size=batch_size)
+    def preprocess_corpus(self, corpus :List[str])  -> List[List[str]]:
+        docs = self.nlp.pipe(corpus, n_process=self.n_process, batch_size=self.batch_size)
         if self.lemmatize:
             tokens = [[tk.lemma_ for tk in doc if all(f(tk) for f in self.conditions)] for doc in docs]
         else:

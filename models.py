@@ -22,11 +22,6 @@ class Doc2vec():
     associated with the tokens that constitute the document under consideration.
     """
 
-    N_PROCESS = 1
-    """
-    Maximum number of processes used to tokenize a corpus.
-    """
-
     def __init__(
         self,
         preproc :Preprocessor|None,
@@ -168,7 +163,7 @@ class Doc2vec():
         elif corpus is not None:
             if self.preproc is not None:
                 logger.info("preprocessing start")
-                tokenized_corpus = self.preproc.preprocess_corpus(corpus, n_process=Doc2vec.N_PROCESS)
+                tokenized_corpus = self.preproc.preprocess_corpus(corpus)
                 logger.info("preprocessing done")
             else:    
                 raise ValueError("Please providing a preprocessor during object initialization or a tokenised corpus")
