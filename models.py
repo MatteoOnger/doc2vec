@@ -3,8 +3,9 @@ import numpy as np
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
-from typing import List, Literal
+from typing import List, Literal, Tuple
 
+from doc2vec.components.clusters import Cluster
 from doc2vec.components.dimreducers import DimReducer
 from doc2vec.components.embedders import Embedder
 from doc2vec.components.preprocessors import Preprocessor
@@ -21,16 +22,12 @@ class Doc2vec():
     associated with the tokens that constitute the document under consideration.
     """
 
-    N_PROCESS = 1
-    """
-    Maximum number of processes used to tokenize a corpus.
-    """
-
     def __init__(
         self,
         preproc :Preprocessor|None,
         embedder :Embedder,
         dimreducer :DimReducer|None,
+        cluster :Cluster|None,
         max_features :int|None=None,
         max_df :float|int=1.0,
         min_df :float|int=1,
@@ -51,6 +48,9 @@ class Doc2vec():
         dimreducer : DimReducer | None
             Dimensionality reducer used to reduce the number of dimensions of document vectors.
             If ``None``, document vectors are kept as they are.
+        cluster : Cluster | None
+            Clustering algorithm used to cluster the document vectors.
+            If ``None``, documents are not grouped.
         max_features : int | None, optional
             If not ``None``, build a vocabulary that only consider the top ``max_features`` ordered by term frequency across the corpus.
             Otherwise, all features are used, by default ``None``.
@@ -79,6 +79,8 @@ class Doc2vec():
         self.preproc = preproc
         self.embedder = embedder
         self.dimreducer = dimreducer
+        self.cluster = cluster
+
         self.tfidfer = TfidfVectorizer(
             lowercase = False,
             tokenizer = lambda x: x,
@@ -95,10 +97,6 @@ class Doc2vec():
         self.exp_a = exp_a
         self.exp_b = exp_b
 
-        self.tcopr_ = None
-        """
-        Tokenized version of the last corpus processed.
-        """
         self.vocab_ = None
         """
         Vocabulary of the last corpus processed.
@@ -118,10 +116,9 @@ class Doc2vec():
         self, 
         corpus :List[str]|None=None,
         tokenized_corpus :List[List[str]]|None=None,
-        save_tcorp :bool=False,
         save_vocab :bool=False,
         save_weights :bool=False
-    ) -> np.ndarray:
+    ) -> np.ndarray|Tuple[np.ndarray, np.ndarray]:
         """
         For each document in the corpus, the function computes a vector representing it.
         The vectors produced lie in the same space defined by the word vectors provided
@@ -129,16 +126,13 @@ class Doc2vec():
 
         Parameters
         ----------
-        corpus : List[str]
+        corpus : List[str] | None
             Corpus to be analyzed, it will be tokenized using 
             the preprocessor provided during the object initialization.
-            Only ``corpus`` or ``tokenized_corpus`` can be set.
-        tokenized_corpus : List[List[str]]
+            Only ``corpus`` or ``tokenized_corpus`` can be set, by default ``None``.
+        tokenized_corpus : List[List[str]] | None
             Corpus, already tokenized, to be analyzed.
-            Only ``corpus`` or ``tokenized_corpus`` can be set.
-        save_tcorp : bool, optional
-            For debugging, if ``True``,
-            the tokenized corpus is saved in ``self.tcorp_``, by default ``False``.
+            Only ``corpus`` or ``tokenized_corpus`` can be set, by default ``None``.
         save_vocab : bool, optional
             For debugging, if ``True``,
             the vocabulary for this corpus is saved in ``self.vocab_``, by default ``False``.
@@ -148,8 +142,9 @@ class Doc2vec():
 
         Returns
         -------
-        : numpy.ndarray of shape\(len(tokenized_corpus), self.vector_size)
-            A vector for each document.
+        : numpy.ndarray of shape\(len(tokenized_corpus), self.vector_size) [numpy.ndarray of shape\(len(tokenized_corpus),)]
+            A vector for each document, in addition return the cluster to which each document
+            has been assigned if ``self.cluster`` is not ``None``.
 
         Raises
         ------
@@ -164,7 +159,7 @@ class Doc2vec():
         elif corpus is not None:
             if self.preproc is not None:
                 logger.info("preprocessing start")
-                tokenized_corpus = self.preproc.preprocess_corpus(corpus, n_process=Doc2vec.N_PROCESS)
+                tokenized_corpus = self.preproc.preprocess_corpus(corpus)
                 logger.info("preprocessing done")
             else:    
                 raise ValueError("Please providing a preprocessor during object initialization or a tokenised corpus")
@@ -182,8 +177,7 @@ class Doc2vec():
         tfidf_corpus = normalize(tfidf_corpus[:, cols_to_keep], norm=self.tfidfer.norm)
         tf_corpus = normalize(tfidf_corpus / self.tfidfer.idf_[cols_to_keep], norm=self.tfidfer.norm)
 
-        # for debugging, save the tokenized corpus and/or weights and/or vocabulary
-        self.tcopr_ = tokenized_corpus if save_tcorp else None
+        # for debugging, save the weights and/or vocabulary
         self.weights_ = list() if save_weights else None
         self.vocab_ = vocab if save_vocab else None
 
@@ -235,4 +229,10 @@ class Doc2vec():
             logger.info("dim reduction start")
             doc_vecs = self.dimreducer.fit_transform(doc_vecs)
             logger.info("dim reduction done")
+        
+        if self.cluster is not None:
+            logger.info("clustering start")
+            labels = self.cluster.fit_predict(doc_vecs)
+            logger.info("clustering done")
+            return doc_vecs, labels
         return doc_vecs

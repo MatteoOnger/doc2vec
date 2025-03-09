@@ -14,24 +14,19 @@ class Preprocessor(ABC):
     """
 
     @abstractmethod
-    def preprocess_corpus(self, corpus :List[str], n_process :int, batch_size :int) -> List[List[str]]:
+    def preprocess_corpus(self, corpus :List[str]) -> List[List[str]]:
         """
-        Applies the preprocessing procedure to the given corpus.
+        Apply the preprocessing procedure to the given corpus.
 
         Parameters
         ----------
         corpus : List[str]
             Corpus to process.
-        n_process : int, optional
-            Multiprocessing, maximum number of processes, by default ``1``.
-            Use as many processes as CPUs if set to ``-1``.
-        batch_size : int, optional
-            Number of documents per batch, by default ``1000``.
 
         Returns
         -------
         : List[List[str]]
-            One of list of tokens for each document in the corpus.
+            One list of tokens for each document in the corpus.
         """
         pass
 
@@ -39,7 +34,7 @@ class Preprocessor(ABC):
     @abstractmethod
     def preprocess_doc(self, doc :str) -> List[str]:
         """
-        Applies the preprocessing procedure to the given document.
+        Apply the preprocessing procedure to the given document.
 
         Parameters
         ----------
@@ -78,7 +73,7 @@ class SpaCyPreprocessor(Preprocessor):
     @Language.component("lower_case_lemmas")
     def _lower_case_lemmas(doc :spacy.tokens.Doc) -> spacy.tokens.Doc:
         """
-        Changes the capitalization of the lemmas to lowercase.
+        Change the capitalization of the lemmas to lowercase.
 
         Parameters
         ----------
@@ -109,6 +104,8 @@ class SpaCyPreprocessor(Preprocessor):
         punc :Literal['KP', 'RM']='KP',
         url :Literal['KP', 'RM']='KP',
         pipeline :str='en_core_web_sm',
+        n_process :int=-1,
+        batch_size :int=1000
     ):
         """
         Parameters
@@ -121,26 +118,32 @@ class SpaCyPreprocessor(Preprocessor):
             If ``True``, stop words are kept, by default ``False``.
         extend_stopwords : Set[str] | None, optional
             List of stop words to add, by default ``None``.
-        pos_to_keep : set[str] | None, optional
+        pos_to_keep : Set[str] | None, optional
             Only tokens marked with one of these POS tags are kept,
             by default all tokens are retained.
-        pos_to_rm : set[str] | None, optional
+        pos_to_rm : Set[str] | None, optional
             Tokens marked with one of these POS tags are removed,
             by default all tokens are retained.
         regex_invalid_tokens : str | SpaCyPreprocessor.CREIT | None, optional
             Regex to mark tokens that must be excluded, by default ``None``.
-        email : Literal['KP', 'RM', 'RP'], optional
+        email : Literal['KP', 'RM'], optional
             Keep (``'KP'``) or remove (``'RM'``) tokens that represent emails, by default ``'KP'``.
-        numb : Literal['KP', 'RM', 'RP'], optional
+        numb : Literal['KP', 'RM'], optional
             Keep (``'KP'``) or remove (``'RM'``) tokens that represent numbers, by default ``'KP'``.
-        punc : Literal['KP', 'RM', 'RP'], optional
+        punc : Literal['KP', 'RM'], optional
             Keep (``'KP'``) or remove (``'RM'``) tokens that represent punctuation, by default ``'KP'``.
-        url : Literal['KP', 'RM', 'RP'], optional
+        url : Literal['KP', 'RM'], optional
             Keep (``'KP'``) or remove (``'RM'``) tokens that represent URLs, by default ``'KP'``.
         pipeline : str, optional
             SpaCy pipeline used, by default ``'en_core_web_sm'``.
+        n_process : int, optional
+            Multiprocessing, maximum number of processes, by default ``-1``.
+            Use as many processes as CPUs if set to ``-1``.
+        batch_size : int, optional
+            Number of documents per batch, by default ``1000``.
         """
         super().__init__()
+        
         self.nlp = spacy.load(pipeline, disable=["parser", "ner"])
         
         # update nlp pipeline
@@ -168,6 +171,8 @@ class SpaCyPreprocessor(Preprocessor):
         self.punc = punc
         self.url = url
         self.pipeline = pipeline
+        self.n_process = n_process
+        self.batch_size = batch_size
 
         # assemble the condition that tokens must satisfy
         self.conditions = list()
@@ -178,7 +183,7 @@ class SpaCyPreprocessor(Preprocessor):
         if pos_to_rm is not None:
             self.conditions.append(lambda x: x.pos_ not in pos_to_rm)
         if regex_invalid_tokens is not None:
-            self.pattern_invalid_tokens = re.compile(self.regex_invalid_tokens, re.I if case_sensitive else 0)
+            self.pattern_invalid_tokens = re.compile(self.regex_invalid_tokens, 0 if case_sensitive else re.I)
             self.conditions.append(lambda x: not self.pattern_invalid_tokens.match(x.text))
         if email == "RM":
             self.conditions.append(lambda x: not x.like_email)
@@ -191,8 +196,8 @@ class SpaCyPreprocessor(Preprocessor):
         return
 
 
-    def preprocess_corpus(self, corpus :List[str], n_process :int=1, batch_size :int=1000)  -> List[List[str]]:
-        docs = self.nlp.pipe(corpus, n_process=n_process, batch_size=batch_size)
+    def preprocess_corpus(self, corpus :List[str])  -> List[List[str]]:
+        docs = self.nlp.pipe(corpus, n_process=self.n_process, batch_size=self.batch_size)
         if self.lemmatize:
             tokens = [[tk.lemma_ for tk in doc if all(f(tk) for f in self.conditions)] for doc in docs]
         else:
