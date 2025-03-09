@@ -54,19 +54,19 @@ class HDBSCAN(Cluster):
         """
         Parameters
         ----------
-        min_cluster_size : int
+        min_cluster_size : int, optional
             The minimum number of samples in a group for that group to be considered a cluster;
             groupings smaller than this size will be left as noise. By default ``5``.
-        min_samples : int | None
+        min_samples : int | None, optional
             The parameter k used to calculate the distance between a point x_p and its k-th nearest neighbor.
             When ``None``, defaults to ``min_cluster_size``.
-        cluster_selection_epsilon : float
+        cluster_selection_epsilon : float, optional
             A distance threshold. Clusters below this value will be merged, by default ``0.0``.
-        metric : str | Callable
+        metric : str | Callable, optional
             The metric to use when calculating distance between instances in a feature array.
             If a string is passed it must match a valid predefined metric, check the official documentation
             for supported distances.
-        store_centersstr : Literal['both', 'centroid', 'medoid'] | None
+        store_centersstr : Literal['both', 'centroid', 'medoid'] | None, optional
             Which, if any, cluster centers to compute and store. The options are:
             - ``None`` which does not compute nor store any centers.
             - ``'centroid'`` which calculates the center by taking the weighted average of their positions.
