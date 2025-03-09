@@ -97,10 +97,6 @@ class Doc2vec():
         self.exp_a = exp_a
         self.exp_b = exp_b
 
-        self.tcopr_ = None
-        """
-        Tokenized version of the last corpus processed.
-        """
         self.vocab_ = None
         """
         Vocabulary of the last corpus processed.
@@ -147,7 +143,7 @@ class Doc2vec():
         Returns
         -------
         : numpy.ndarray of shape\(len(tokenized_corpus), self.vector_size) [numpy.ndarray of shape\(len(tokenized_corpus),)]
-            A vector for each document, in addition to the cluster to which each document
+            A vector for each document, in addition return the cluster to which each document
             has been assigned if ``self.cluster`` is not ``None``.
 
         Raises
