@@ -45,7 +45,7 @@ class DimReducer(ABC):
     @abstractmethod
     def transform(self, x :np.ndarray) -> np.ndarray:
         """
-        Transform X into the existing embedded space and
+        Transform ``x`` into the existing embedded space and
         return that transformed output.
     
         Parameters
@@ -96,7 +96,7 @@ class UMAP(DimReducer):
             result on a more even dispersal of points. The value should be set
             relative to the ``spread`` value, which determines the scale at which
             embedded points will be spread out. By default ``0.1``.
-        **kwargs:
+        **kwargs :
             All remaining parameters supported by ``umap.UMAP(...)``.
         """
         super().__init__()
