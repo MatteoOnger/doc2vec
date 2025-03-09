@@ -16,7 +16,7 @@ class Preprocessor(ABC):
     @abstractmethod
     def preprocess_corpus(self, corpus :List[str]) -> List[List[str]]:
         """
-        Applies the preprocessing procedure to the given corpus.
+        Apply the preprocessing procedure to the given corpus.
 
         Parameters
         ----------
@@ -34,7 +34,7 @@ class Preprocessor(ABC):
     @abstractmethod
     def preprocess_doc(self, doc :str) -> List[str]:
         """
-        Applies the preprocessing procedure to the given document.
+        Apply the preprocessing procedure to the given document.
 
         Parameters
         ----------
@@ -73,7 +73,7 @@ class SpaCyPreprocessor(Preprocessor):
     @Language.component("lower_case_lemmas")
     def _lower_case_lemmas(doc :spacy.tokens.Doc) -> spacy.tokens.Doc:
         """
-        Changes the capitalization of the lemmas to lowercase.
+        Change the capitalization of the lemmas to lowercase.
 
         Parameters
         ----------
@@ -118,26 +118,26 @@ class SpaCyPreprocessor(Preprocessor):
             If ``True``, stop words are kept, by default ``False``.
         extend_stopwords : Set[str] | None, optional
             List of stop words to add, by default ``None``.
-        pos_to_keep : set[str] | None, optional
+        pos_to_keep : Set[str] | None, optional
             Only tokens marked with one of these POS tags are kept,
             by default all tokens are retained.
-        pos_to_rm : set[str] | None, optional
+        pos_to_rm : Set[str] | None, optional
             Tokens marked with one of these POS tags are removed,
             by default all tokens are retained.
         regex_invalid_tokens : str | SpaCyPreprocessor.CREIT | None, optional
             Regex to mark tokens that must be excluded, by default ``None``.
-        email : Literal['KP', 'RM', 'RP'], optional
+        email : Literal['KP', 'RM'], optional
             Keep (``'KP'``) or remove (``'RM'``) tokens that represent emails, by default ``'KP'``.
-        numb : Literal['KP', 'RM', 'RP'], optional
+        numb : Literal['KP', 'RM'], optional
             Keep (``'KP'``) or remove (``'RM'``) tokens that represent numbers, by default ``'KP'``.
-        punc : Literal['KP', 'RM', 'RP'], optional
+        punc : Literal['KP', 'RM'], optional
             Keep (``'KP'``) or remove (``'RM'``) tokens that represent punctuation, by default ``'KP'``.
-        url : Literal['KP', 'RM', 'RP'], optional
+        url : Literal['KP', 'RM'], optional
             Keep (``'KP'``) or remove (``'RM'``) tokens that represent URLs, by default ``'KP'``.
         pipeline : str, optional
             SpaCy pipeline used, by default ``'en_core_web_sm'``.
         n_process : int, optional
-            Multiprocessing, maximum number of processes, by default ``1``.
+            Multiprocessing, maximum number of processes, by default ``-1``.
             Use as many processes as CPUs if set to ``-1``.
         batch_size : int, optional
             Number of documents per batch, by default ``1000``.
@@ -183,7 +183,7 @@ class SpaCyPreprocessor(Preprocessor):
         if pos_to_rm is not None:
             self.conditions.append(lambda x: x.pos_ not in pos_to_rm)
         if regex_invalid_tokens is not None:
-            self.pattern_invalid_tokens = re.compile(self.regex_invalid_tokens, re.I if case_sensitive else 0)
+            self.pattern_invalid_tokens = re.compile(self.regex_invalid_tokens, 0 if case_sensitive else re.I)
             self.conditions.append(lambda x: not self.pattern_invalid_tokens.match(x.text))
         if email == "RM":
             self.conditions.append(lambda x: not x.like_email)
