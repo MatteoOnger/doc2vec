@@ -180,11 +180,11 @@ class SpaCyPreprocessor(Preprocessor):
             self.conditions.append(lambda x: not x.is_stop)
         if pos_to_keep is not None:
             self.conditions.append(lambda x: x.pos_ in pos_to_keep)
-        if pos_to_rm is not None:
-            self.conditions.append(lambda x: x.pos_ not in pos_to_rm)
         if regex_invalid_tokens is not None:
             self.pattern_invalid_tokens = re.compile(self.regex_invalid_tokens, 0 if case_sensitive else re.I)
             self.conditions.append(lambda x: not self.pattern_invalid_tokens.match(x.text))
+        if pos_to_rm is not None:
+            self.conditions.append(lambda x: x.pos_ not in pos_to_rm)
         if email == "RM":
             self.conditions.append(lambda x: not x.like_email)
         if numb == "RM":
