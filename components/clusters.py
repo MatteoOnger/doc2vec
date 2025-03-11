@@ -95,25 +95,6 @@ class HDBSCAN(Cluster):
         return
 
 
-    def get_probabilities(self) -> np.ndarray:
-        """
-        Get the strength with which each sample is a member of its assigned cluster.
-
-        Returns
-        -------
-        : numpy.array of shape \(M,)
-            Probability with which each sample is a member of its assigned cluster.
-        
-        Raises
-        ------
-        ValueError
-            If the object has not been fitted.
-        """
-        if not self.isfitted:
-            raise ValueError("Please fit the model before calling this method")
-        return self.hdbscan.probabilities_
-
-
     def get_centroids(self) -> np.ndarray:
         """
         Get a collection containing the centroid of each cluster
@@ -152,6 +133,44 @@ class HDBSCAN(Cluster):
         if not self.isfitted:
             raise ValueError("Please fit the model before calling this method")
         return self.hdbscan.medoids_
+
+
+    def get_n_clusters(self) -> int:
+        """
+        Get the number of clusters without considering outliers.
+
+        Returns
+        -------
+        : int
+            Number of clusters.
+        
+        Raises
+        ------
+        ValueError
+            If the object has not been fitted.
+        """
+        if not self.isfitted:
+            raise ValueError("Please fit the model before calling this method")
+        return len(np.unique(self.hdbscan.labels_)) - 1
+
+
+    def get_probabilities(self) -> np.ndarray:
+        """
+        Get the strength with which each sample is a member of its assigned cluster.
+
+        Returns
+        -------
+        : numpy.array of shape \(M,)
+            Probability with which each sample is a member of its assigned cluster.
+        
+        Raises
+        ------
+        ValueError
+            If the object has not been fitted.
+        """
+        if not self.isfitted:
+            raise ValueError("Please fit the model before calling this method")
+        return self.hdbscan.probabilities_
 
 
     def fit_predict(self, x :np.ndarray) -> np.ndarray:
