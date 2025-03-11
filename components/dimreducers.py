@@ -112,7 +112,7 @@ class UMAP(DimReducer):
 
 
     def fit(self, x :np.ndarray) -> None:
-        self.dimred = self.dimred.fit_transform(x)
+        self.dimred = self.dimred.fit(x)
         return None
 
 

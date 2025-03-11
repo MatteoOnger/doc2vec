@@ -195,6 +195,8 @@ class Doc2vec():
                 continue
             elif tokens.size == 1:
                 doc_vecs[i] = self.embedder.get_vector(tokens[0])
+                self.weights_.append({tokens[0]:1})
+                continue
 
             # word vectors and their norms
             vecs = self.embedder.get_vectors(tokens)
@@ -208,11 +210,11 @@ class Doc2vec():
             weights = tfidf_corpus[i].data**self.exp_a * np.average(cos_sim, axis=1, weights=tf_corpus[i].data)**self.exp_b
 
             if self.eps_type == "abs":
-                weights[weights <= self.eps] = 0.0
+                weights[(weights <= 0.2) & (weights != weights.max())] = 0.0
             elif self.eps_type == "pc":
                 sorted_weights_idxs = np.argsort(weights / np.sum(weights))[::-1]
                 cumsum_weights = np.cumsum(weights[sorted_weights_idxs])
-                weights[sorted_weights_idxs[cumsum_weights >= self.eps]] = 0.0
+                weights[sorted_weights_idxs[1:][cumsum_weights[1:] > self.eps]] = 0.0
             else:
                 raise NotImplementedError(f"'{self.eps_type}' not implemented")
 
