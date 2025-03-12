@@ -4,8 +4,6 @@ import sklearn
 from abc import ABC, abstractmethod
 from typing import Callable, Literal
 
-import sklearn.cluster
-
 
 
 class Cluster(ABC):
