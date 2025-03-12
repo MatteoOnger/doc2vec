@@ -210,7 +210,7 @@ class Doc2vec():
             weights = tfidf_corpus[i].data**self.exp_a * np.average(cos_sim, axis=1, weights=tf_corpus[i].data)**self.exp_b
 
             if self.eps_type == "abs":
-                weights[(weights <= 0.2) & (weights != weights.max())] = 0.0
+                weights[(weights <= self.eps) & (weights != weights.max())] = 0.0
             elif self.eps_type == "pc":
                 sorted_weights_idxs = np.argsort(weights / np.sum(weights))[::-1]
                 cumsum_weights = np.cumsum(weights[sorted_weights_idxs])
