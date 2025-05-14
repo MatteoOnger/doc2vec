@@ -1,0 +1,18 @@
+name: d2venv
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - datasets
+  - gensim
+  - ipykernel
+  - ipywidgets
+  - matplotlib
+  - matplotlib-inline
+  - scikit-learn
+  - seaborn
+  - spacy
+  - tqdm
+  - umap-learn
+  - pip
