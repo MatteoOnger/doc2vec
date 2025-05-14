@@ -3,7 +3,7 @@ name = "doc2vec"
 version = "0.1"
 description = ""
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
@@ -18,3 +18,6 @@ Homepage = "https://github.com/MatteoOnger/doc2vec"
 [build-system]
 requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["doc2vec*"]
