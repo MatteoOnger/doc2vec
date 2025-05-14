@@ -1,0 +1,20 @@
+[project]
+name = "doc2vec"
+version = "0.1"
+description = ""
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+authors = [
+  { name = "Matteo Onger", email = "matteo.onger@studenti.unimi.it" },
+]
+
+[project.urls]
+Homepage = "https://github.com/MatteoOnger/doc2vec"
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
