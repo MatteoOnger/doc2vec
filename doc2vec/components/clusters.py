@@ -79,8 +79,6 @@ class HDBSCAN(Cluster):
         if "n_jobs" not in kwargs.keys():
             kwargs["n_jobs"] = -1
 
-        print(sklearn.__version__)
-
         self.hdbscan = sklearn.cluster.HDBSCAN(
             min_cluster_size = min_cluster_size,
             min_samples = min_samples,
