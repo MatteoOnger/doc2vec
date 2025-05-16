@@ -5,11 +5,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
 from typing import List, Literal, Tuple
 
-from .components.clusters import Cluster
-from .components.dimreducers import DimReducer
-from .components.embedders import Embedder
-from .components.preprocessors import Preprocessor
-
+from doc2vec.components.clusters import Cluster
+from doc2vec.components.dimreducers import DimReducer
+from doc2vec.components.embedders import Embedder
+from doc2vec.components.preprocessors import Preprocessor
 
 
 logger = logging.getLogger(__name__)
