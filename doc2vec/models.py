@@ -3,12 +3,12 @@ import numpy as np
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
-from typing import List, Literal, Tuple
+from typing import Any, Dict, List, Literal, Tuple, Type
 
-from doc2vec.components.clusters import Cluster
-from doc2vec.components.dimreducers import DimReducer
-from doc2vec.components.embedders import Embedder
-from doc2vec.components.preprocessors import Preprocessor
+from doc2vec.components.cluster import Cluster
+from doc2vec.components.reducer import DimReducer
+from doc2vec.components.embedder import Embedder
+from doc2vec.components.preprocessor import Preprocessor
 
 
 
@@ -18,63 +18,73 @@ logger = logging.getLogger(__name__)
 
 class Doc2vec():
     """
-    This class maps a document to a vector using a weighted average of the vectors
-    associated with the tokens that constitute the document under consideration.
+    Maps documents to vectors using a weighted average of word embeddings
+    combined with TF-IDF statistics and intra-document token similarity.
+
+    This implementation allows optional preprocessing, dimensionality reduction,
+    and clustering of the resulting document embeddings.
+
+    Attributes
+    ----------
+    tfidfer : sklearn.feature_extraction.text.TfidfVectorizer
+        TF-IDF vectorizer used to calculate term weights.
+    vocab_ : np.ndarray or None
+        Vocabulary of the most recently processed corpus.
+    weights_ : list of dict or None
+        Token weights for each document in the most recent transformation.
+    vector_size : int
+        Dimensionality of the resulting document vectors.
     """
 
     def __init__(
         self,
-        preproc :Preprocessor|None,
-        embedder :Embedder,
-        dimreducer :DimReducer|None,
-        cluster :Cluster|None,
-        max_features :int|None=None,
-        max_df :float|int=1.0,
-        min_df :float|int=1,
-        norm :Literal['l1','l2']|None='l1',
-        eps_type :Literal['abs', 'pc']='abs',
-        eps :float=0.0,
-        exp_a :float=1.0,
-        exp_b :float=1.0,
+        preproc: Preprocessor|None,
+        embedder: Embedder,
+        dimreducer: DimReducer|None,
+        cluster: Cluster|None,
+        max_features: int|None = None,
+        max_df: float|int = 1.0,
+        min_df: float|int = 1,
+        norm: Literal['l1','l2']|None = 'l1',
+        eps_type: Literal['abs', 'pc'] = 'abs',
+        eps: float = 0.0,
+        exp_a: float = 1.0,
+        exp_b: float = 1.0,
     ):
         """
         Parameters
         ----------
         preproc : Preprocessor | None
             Preprocessor used to tokenize the corpus.
-            If ``None``, a corpus already tokenized must be provided.
+            If `None`, a tokenized corpus must be supplied during transformation.
         embedder : Embedder
-            Embedder used to embed tokens, i.e. get the vector representation of the words.
+            Word embedding model for converting tokens to vectors.
         dimreducer : DimReducer | None
-            Dimensionality reducer used to reduce the number of dimensions of document vectors.
-            If ``None``, document vectors are kept as they are.
+            Dimensionality reducer. If `None`, dimensionality is not reduced.
         cluster : Cluster | None
-            Clustering algorithm used to cluster the document vectors.
-            If ``None``, documents are not grouped.
+            Clustering model. If `None`, documents are not clustered.
         max_features : int | None, optional
-            If not ``None``, build a vocabulary that only consider the top ``max_features`` ordered by term frequency across the corpus.
-            Otherwise, all features are used, by default ``None``.
+            Build a vocabulary that only consider the top `max_features` ordered by 
+            term frequency across the corpus. If `None`, all features are used.
         max_df : float | int, optional
             When building the vocabulary ignore terms that have a document frequency strictly higher
-            than the given threshold, by default ``1.0``.
+            than the given threshold. By default `1.0`.
         min_df : float | int, optional
             When building the vocabulary ignore terms that have a document frequency strictly lower
-            than the given threshold, by default ``1``.
+            than the given threshold. By default `1`.
         norm : Literal['l1', 'l2'] | None, optional
-            Each output row will have unit norm, either:
-            - ``'l2'`` sums the squares of vector elements is ``1``.
-            - ``'l1'`` sums the absolute values of vector elements is ``1`` (default choice).
-            - ``None`` means no normalization.
+            Norm used to normalize term vectors, by default `'l1'`.
+            If `None`, no normalization is performed.
         eps_type : Literal['abs', 'pc'], optional
             Type of threshold:
-            - ``'abs'`` sets weights less than ``eps`` to zero (default choice).
-            - ``'pc'`` keeps only the largest n weights to cover at least ``eps`` (%) of the total, set the others to zero.
+            - `'abs'` sets weights less than `eps` to zero (default choice).
+            - `'pc'` keeps only the largest N weights to cover at least `eps` (%) of the total, set the others to zero.
         eps : float, optional
-            Threshold, by default ``0.0``.
+            Threshold value. By default `0.0`.
         exp_a : float, optional
-            Exponent of the TF-IDF term, by default ``1.0``.
+            Exponent applied to the TF-IDF term, by default `1.0`.
         exp_b : float, optional
-            Exponent of the similarity term, by default ``1.0``.
+            Exponent applied to the cosine similarity term, by default `1.0`.
         """
         self.preproc = preproc
         self.embedder = embedder
@@ -110,14 +120,14 @@ class Doc2vec():
         Size of the document vectors.
         """
         return
-    
+
 
     def transform(
         self, 
-        corpus :List[str]|None=None,
-        tokenized_corpus :List[List[str]]|None=None,
-        save_vocab :bool=False,
-        save_weights :bool=False
+        corpus: List[str]|None = None,
+        tokenized_corpus: List[List[str]]|None = None,
+        save_vocab: bool = False,
+        save_weights: bool = False
     ) -> np.ndarray|Tuple[np.ndarray, np.ndarray]:
         """
         For each document in the corpus, the function computes a vector representing it.
@@ -127,33 +137,28 @@ class Doc2vec():
         Parameters
         ----------
         corpus : List[str] | None
-            Corpus to be analyzed, it will be tokenized using 
-            the preprocessor provided during the object initialization.
-            Only ``corpus`` or ``tokenized_corpus`` can be set, by default ``None``.
+            List of raw documents. Will be tokenized if a preprocessor is provided.
         tokenized_corpus : List[List[str]] | None
-            Corpus, already tokenized, to be analyzed.
-            Only ``corpus`` or ``tokenized_corpus`` can be set, by default ``None``.
+            Tokenized documents. If given, bypasses preprocessing.
         save_vocab : bool, optional
-            For debugging, if ``True``,
-            the vocabulary for this corpus is saved in ``self.vocab_``, by default ``False``.
+            Whether to store the vocabulary in `self.vocab_` for inspection/debugging. Default is `False`.
         save_weights : bool, optional
-            For debugging, if ``True``,
-            the weights of each token in each document are saved in ``self.weights_``, by default ``False``.
+            Whether to store the token weights in `self.weights_`. Default is `False`.
 
         Returns
         -------
-        doc_vects : numpy.ndarray of shape\(len(tokenized_corpus), self.vector_size)
-            A vector for each document.
-        labels : numpy.ndarray of shape\(len(tokenized_corpus),)
-            The cluster to which each document has been assigned if ``self.cluster`` is not ``None``.
-        
+        doc_vects : numpy.ndarray of shape (n_documents, vector_size)
+            Matrix where each row is a vector representation of a document.
+        labels : numpy.ndarray of shape (n_documents,)
+            Cluster assignments if `self.cluster` is not `None`. Only returned if clustering is performed.
+
         Raises
         ------
         ValueError
-            - If both parameters ``corpus`` and ``tokenized_corpus`` are provided.
-            - If a non-tokenised corpus is supplied to ``self`` initialized without a preprocessor.
+            - If both `corpus` and `tokenized_corpus` are provided.
+            - If `corpus` is provided without a preprocessor.
         NotImplementedError
-            - If ``self.eps_type`` is a non-implemented threshold type.
+            - If `eps_type` is not one of `['abs', 'pc']`.
         """
         if corpus is not None and tokenized_corpus is not None:
             raise ValueError("Only one between <corpus> and <tokenized_corpus> can be set")
