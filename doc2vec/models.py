@@ -157,6 +157,34 @@ class Doc2vec():
         max_features: int|None = None,
     ) -> Dict[int|str, List[Tuple[str, float]]]:
         """
+        Retrieve top `topk` words that are most representative for each cluster
+        using class-based TF-IDF (C-TF-IDF).
+
+        Parameters
+        ----------
+        tokenized_corpus : List[List[str]]
+            Pre-tokenized text corpus grouped per document.
+        labels : numpy.ndarray of shape (n_documents,)
+            Cluster labels corresponding to each document in the corpus.
+        topk : int, optional
+            Number of top representative words per cluster to return. Default is `10`.
+        max_df : float | int, optional
+            Maximum document frequency for terms. Default is `1.0`.
+        min_df : float | int, optional
+            Minimum document frequency for terms. Default is `1`.
+        max_features : int | None, optional
+            Maximum number of features to consider. If `None`, use all terms.
+
+        Returns
+        -------
+        : Dict[int|str, List[Tuple[str, float]]]
+            Dictionary mapping cluster label to its top `topk` representative words
+            and their c-TF-IDF scores.
+
+        Notes
+        -----
+        If no vocabulary has been computed previously, one will be constructed
+        using the provided corpus and default parameters.
         """
         if self.vocab_ is None:
             logger.warning("vocabolary is empty, computing the vocabulary using default parameters")
