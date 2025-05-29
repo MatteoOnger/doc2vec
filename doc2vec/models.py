@@ -9,6 +9,7 @@ from doc2vec.components.cluster import Cluster
 from doc2vec.components.reducer import DimReducer
 from doc2vec.components.embedder import Embedder
 from doc2vec.components.preprocessor import Preprocessor
+from doc2vec.components.utils.ctfidf import CtfidfVectorizer
 
 
 
@@ -28,7 +29,7 @@ class Doc2vec():
     ----------
     tfidfer : sklearn.feature_extraction.text.TfidfVectorizer
         TF-IDF vectorizer used to calculate term weights.
-    vocab_ : np.ndarray or None
+    vocab_ : numpy.ndarray or None
         Vocabulary of the most recently processed corpus.
     weights_ : list of dict or None
         Token weights for each document in the most recent transformation.
@@ -120,6 +121,66 @@ class Doc2vec():
         Size of the document vectors.
         """
         return
+
+
+    def get_closest_words(self, vector: np.ndarray, topk: int|None = 10) -> List[Tuple[str, float]]:
+        """
+        Return the `topk` closest words for the given to vector.
+
+        Parameters
+        ----------
+        vector : numpy.ndarray of shape (vector_size,)
+            Vector to query by similarity.
+        topk : int, optional
+            Number of closest words to return, by default `10`.
+
+        Returns
+        -------
+        : List[Tuple[str, float]]
+            Closest words and their similarity scores.
+
+        Raises
+        ------
+        ValueError
+            - If `vector` does not match the expected vector size.
+        """
+        return self.embedder.get_top_words(vector, topk=topk)
+
+
+    def get_top_words_per_cluster(
+        self,
+        tokenized_corpus: List[List[str]],
+        labels: np.ndarray,
+        topk: int|None = 10,
+        max_df: float|int = 1.0,
+        min_df: float|int = 1,
+        max_features: int|None = None,
+    ) -> Dict[int|str, List[Tuple[str, float]]]:
+        """
+        """
+        if self.vocab_ is None:
+            logger.warning("vocabolary is empty, computing the vocabulary using default parameters")
+
+        ctfidfer = CtfidfVectorizer(
+            max_df = max_df,
+            min_df = min_df,
+            max_features = max_features,
+            vocabulary = self.vocab_
+        )
+
+        ctfidf_corpus = ctfidfer.fit_transform(tokenized_corpus, labels).sorted_indices()
+        unique_labels = ctfidfer.get_label_names_out()
+        voc = ctfidfer.get_feature_names_out()
+
+        res = {}
+        for i in range(len(unique_labels)):
+            row = ctfidf_corpus.getrow(i)
+
+            top_n_idx_in_data = np.argsort(row.data)[-topk:][::-1]
+            top_n_col_indices = row.indices[top_n_idx_in_data]
+            
+            res[unique_labels[i]] = [(voc[v], row.data[s]) for v, s in zip(top_n_col_indices, top_n_idx_in_data)]
+        return res
 
 
     def transform(
