@@ -2,6 +2,7 @@ import numpy as np
 import sklearn
 import sklearn.cluster
 
+from sklearn.exceptions import NotFittedError
 from typing import Callable, Literal
 
 from doc2vec.components.cluster import Cluster
@@ -89,11 +90,11 @@ class HDBSCAN(Cluster):
 
         Raises
         ------
-        ValueError
+        NotFittedError
             - If the model has not been fitted yet.
         """
         if not self.isfitted:
-            raise ValueError("Please fit the model before calling this method")
+            raise NotFittedError("Please fit the model before calling this method")
         return self.hdbscan.centroids_
 
 
@@ -109,11 +110,11 @@ class HDBSCAN(Cluster):
         
         Raises
         ------
-        ValueError
+        NotFittedError
             - If the object has not been fitted.
         """
         if not self.isfitted:
-            raise ValueError("Please fit the model before calling this method")
+            raise NotFittedError("Please fit the model before calling this method")
         return self.hdbscan.medoids_
 
 
@@ -128,11 +129,11 @@ class HDBSCAN(Cluster):
 
         Raises
         ------
-        ValueError
+        NotFittedError
             - If the model has not been fitted yet.
         """
         if not self.isfitted:
-            raise ValueError("Please fit the model before calling this method")
+            raise NotFittedError("Please fit the model before calling this method")
         return len(np.unique(self.hdbscan.labels_)) - 1
 
 
@@ -147,11 +148,11 @@ class HDBSCAN(Cluster):
         
         Raises
         ------
-        ValueError
+        NotFittedError
             - If the object has not been fitted.
         """
         if not self.isfitted:
-            raise ValueError("Please fit the model before calling this method")
+            raise NotFittedError("Please fit the model before calling this method")
         return self.hdbscan.probabilities_
 
 

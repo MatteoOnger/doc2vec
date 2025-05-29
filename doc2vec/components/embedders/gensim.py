@@ -36,9 +36,9 @@ class GensimEmbedder(Embedder):
 
     def get_top_words(self, vector: np.ndarray|None = None, word: str|None = None, topk: int|None = 10) -> List[Tuple[str, float]]:
         if vector is None and word is None:
-            raise ValueError("both <vector> and <word> are None")
+            raise ValueError("Both <vector> and <word> are None")
         if vector is not None and word is not None:
-            raise ValueError("both <vector> and <word> are not None")
+            raise ValueError("Both <vector> and <word> are not None")
 
         if word is not None:
             vector = self.get_vector(word)
