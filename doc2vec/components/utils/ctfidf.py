@@ -10,7 +10,7 @@ from typing import List
 
 class CtfidfVectorizer():
     """
-    Class-based implementation of the Class-based TF-IDF (C-TF-IDF) Vectorizer.
+    Class-based implementation of the Class-based TF-IDF (c-TF-IDF) Vectorizer.
 
     The c-TF-IDF algorithm is an adaptation of the traditional TF-IDF metric for use in
     scenarios where each document belongs to a class or topic (label). Instead of computing
@@ -97,7 +97,7 @@ class CtfidfVectorizer():
 
     def fit_transform(self, tokenized_corpus: List[List[str]], labels: np.ndarray) -> csr_matrix:
         """
-        Fit the C-TF-IDF model on the provided tokenized corpus and labels,
+        Fit the c-TF-IDF model on the provided tokenized corpus and labels,
         and return the class-based TF-IDF matrix.
 
         Parameters
