@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Tuple
 
 
+
 class SupervisedMetric(ABC):
     """
     Abstract base class for supervised evaluation metrics of topic models.
@@ -11,7 +12,32 @@ class SupervisedMetric(ABC):
     This class is intended to be extended by specific metric implementations
     that require ground truth labels to assess the quality of topics.
     """
-    pass
+    
+    @abstractmethod
+    def evaluate(
+        self,
+        labels_true: np.ndarray,
+        labels_pred: np.ndarray
+    ) -> float:
+        """
+        Evaluate the alignment between predicted and true labels.
+
+        This method computes a scalar score that quantifies how well the 
+        predicted labels match the ground truth labels.
+
+        Parameters
+        ----------
+        labels_true : numpy.ndarray
+            An array of ground truth topic labels for each document.
+        labels_pred : numpy.ndarray
+            An array of predicted topic labels for each document.
+
+        Returns
+        -------
+        : float
+            A single float value representing the evaluation score.
+        """
+        pass
 
 
 
