@@ -22,7 +22,8 @@ class RandScore(SupervisedMetric):
         No additional parameters are required.
         """
         super().__init__()
+        return
 
 
     def evaluate(self, labels_true: np.ndarray, labels_pred: np.ndarray) -> float:
-        return rand_score(labels_pred, labels_true)
+        return rand_score(labels_true, labels_pred)
